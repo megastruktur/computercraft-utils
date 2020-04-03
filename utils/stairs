@@ -1,0 +1,123 @@
+--[[
+    Dig forward and then go back to minus one.
+]]
+function dig_forward_back_minus_one(amount_raw)
+    
+    amount = tonumber(amount_raw)
+    i = 0
+    -- Use while because sometimes we can't move
+    -- because of the gravel or sand
+    while i < amount do
+        if turtle.detect() then
+            turtle.dig()
+            print("I'm digging")
+            -- Get the block from the ground
+            turtle.suck()
+            -- Wait for upper block to come down
+            os.sleep(0.1)
+        else
+            -- Sometimes we can't move. So wait repeat until we can.
+            while not turtle.forward() do
+                print("I can't move!")
+                os.sleep(1)
+            end
+            i = i + 1
+        end
+    end
+    
+    -- Don't overcomplicate here. Just move.
+    for z = amount, 2, -1 do
+        if not turtle.back() then
+            error("Haha, very funny. Now dig by yourself then, joker.")
+        end
+    end
+    
+end
+
+--[[
+  Get the list of solid blocks. Update.
+]]
+function get_solid_block_list()
+  return {"minecraft:dirt","minecraft:cobblestone"}
+end
+
+--[[
+  Selects the solid block from inventory.
+]]
+function select_solid_block_from_inventory()
+
+  blocks = get_solid_block_list()
+  for i=1,16,1 do
+    
+    turtle.select(i)
+    
+    for ind,block in pairs(blocks) do
+      if turtle.getItemDetail(i).name == block then
+        do return end
+      end
+    end
+  
+  end
+
+end
+
+--[[
+  If nothing below - fill from the inventory.
+]]
+function fill_stair_block_below()
+  
+  while not turtle.detectDown() do
+    select_solid_block_from_inventory()
+    turtle.placeDown()
+  end
+  
+end
+
+--[[
+  Dig stairs without refuel.
+]]
+function make_stairs(depth_raw)
+    
+  x_delta = 0
+  y_delta = 0
+  
+  depth = tonumber(depth_raw)
+  
+  current_depth = 0
+  
+  while current_depth ~= depth do
+      
+      dig_forward_back_minus_one(depth - current_depth)
+      x_delta = x_delta + 1
+      -- Move a turtle down.
+      if turtle.detectDown() then
+          turtle.digDown()
+      end
+      
+      if turtle.down() then
+          current_depth = current_depth + 1
+          y_delta = y_delta + 1
+          
+          fill_stair_block_below()
+      else
+          print("Can't move down. Ending.")
+          break
+      end
+  end
+  
+  -- Return back.
+  for y = y_delta, 1, -1 do
+      turtle.up()
+  end
+  
+  for x = x_delta, 1, -1 do
+      turtle.back()
+  end
+    
+    
+end
+
+local args = { ... }
+make_stairs(args[1])
+
+
