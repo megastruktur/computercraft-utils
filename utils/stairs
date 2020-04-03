@@ -52,7 +52,7 @@ function select_solid_block_from_inventory()
     turtle.select(i)
     
     for ind,block in pairs(blocks) do
-      if turtle.getItemDetail(i).name == block then
+      if turtle.getItemDetail(i) and turtle.getItemDetail(i).name == block then
         do return end
       end
     end
