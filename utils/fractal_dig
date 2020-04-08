@@ -1,0 +1,167 @@
+--[[
+  Get the list of solid blocks. Update.
+]]
+function get_solid_block_list()
+  return {"minecraft:dirt","minecraft:cobblestone", "minecraft:stone"}
+end
+
+--[[
+  Selects the solid block from inventory.
+]]
+function select_solid_block_from_inventory()
+
+  blocks = get_solid_block_list()
+  for i=1,16,1 do
+    
+    turtle.select(i)
+    
+    for ind,block in pairs(blocks) do
+      if turtle.getItemDetail(i) and turtle.getItemDetail(i).name == block then
+        do return end
+      end
+    end
+  
+  end
+
+end
+
+--[[
+    Place solid block below turtle.
+]]
+function place_solid_block_down()
+    select_solid_block_from_inventory()
+    turtle.placeDown()
+end
+
+--[[
+    Dig forward amount of blocks.
+]]
+function dig_forward(length, fill_with_blocks)
+    
+    fill_with_blocks = fill_with_blocks or false
+    
+    for i = 1, length, 1 do
+        
+        if fill_with_blocks then
+            place_solid_block_down()
+        end
+        
+        while not turtle.forward() do
+            turtle.dig()
+        end
+        
+    end
+    
+end
+
+--[[
+    Go back to the starting point.
+]]
+function go_back(x_current, y_current, last_face_direction)
+    
+    if last_face_direction == "forward" then
+        turtle.turnLeft()
+    elseif last_face_direction == "right" then
+        turtle.turnLeft()
+        turtle.turnLeft()
+    elseif last_face_direction == "back" then
+        turtle.turnRight()
+    end
+    
+    dig_forward(x_current)
+    turtle.turnLeft()
+    dig_forward(y_current)
+    turtle.turnRight()
+    turtle.turnRight()
+end
+
+--[[
+    Dig a 1-block-height layer.
+]]
+function dig_layer_fractal(width, length, fill_with_blocks)
+    
+    fractal_mod = 0
+    blocks_to_dig = width * length
+    i = 1
+    z = 1
+    x_start = 0
+    y_start = 0
+    x_current = 0
+    y_current = 0
+    last_face_direction = "forward"
+    
+    while blocks_to_dig ~= 0 do
+        
+        if i%2 == 0 then
+            fractal_mod = fractal_mod + 1
+            amount_to_dig = width - fractal_mod
+        else
+            amount_to_dig = length - fractal_mod
+        end
+        
+        dig_forward(amount_to_dig, fill_with_blocks)
+        turtle.turnRight()
+        blocks_to_dig = blocks_to_dig - amount_to_dig
+        
+        if z == 1 then
+            y_current = y_current + amount_to_dig
+            last_face_direction = "right"
+        elseif z == 2 then
+            x_current = x_current + amount_to_dig
+            last_face_direction = "back"
+        elseif z == 3 then
+            y_current = y_current - amount_to_dig
+            last_face_direction = "left"
+        elseif z == 4 then
+            x_current = x_current - amount_to_dig
+            last_face_direction = "forward"
+        end
+        
+        i = i + 1
+        z = z + 1
+        if i == 5 then
+            z = 1
+        end
+    end
+    
+    go_back(x_current, y_current, last_face_direction)
+end
+
+--[[
+    Main dig function.
+]]
+function go_fractal_layer_dig(width, length, height)
+
+    for i = 1, height, 1 do
+        
+        -- Fill the first layer with blocks.
+        if i == 1 then
+            fill_with_blocks = true
+        else
+            fill_with_blocks = false
+        end
+        
+        dig_layer_fractal(width, length, fill_with_blocks)
+        
+        if i ~= height then
+            while not turtle.up() do
+                turtle.digUp()
+            end
+        else
+            for z = i, 2, -1 do
+                while not turtle.down() do
+                    turtle.digDown()
+                end
+            end
+        end
+    end
+    
+end
+
+local args = { ... }
+
+local width = tonumber(args[1])
+local length = tonumber(args[2])
+local height = tonumber(args[3])
+
+go_fractal_layer_dig(width, length, height)
