@@ -118,9 +118,10 @@ function dig_layer_fractal(width, length, fill_with_blocks)
         end
         
         i = i + 1
-        z = z + 1
-        if i == 5 then
+        if z == 4 then
             z = 1
+        else
+            z = z + 1
         end
     end
     
