@@ -29,8 +29,10 @@ end
     Place solid block below turtle.
 ]]
 function place_solid_block_down()
-    select_solid_block_from_inventory()
-    turtle.placeDown()
+    if not turtle.detectDown() then
+      select_solid_block_from_inventory()
+      turtle.placeDown()
+    end
 end
 
 --[[
