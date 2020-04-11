@@ -1,0 +1,61 @@
+--[[
+  Get the list of solid blocks. Update.
+]]
+function get_solid_block_list()
+  return {"minecraft:dirt","minecraft:cobblestone", "minecraft:stone"}
+end
+
+--[[
+  Selects the solid block from inventory.
+]]
+function select_solid_block_from_inventory()
+
+  blocks = get_solid_block_list()
+  for i=1,16,1 do
+    
+    turtle.select(i)
+    
+    for ind,block in pairs(blocks) do
+      if turtle.getItemDetail(i) and turtle.getItemDetail(i).name == block then
+        do return end
+      end
+    end
+  
+  end
+
+end
+
+--[[
+    Place solid block below turtle.
+]]
+function place_solid_block_down()
+    if not turtle.detectDown() then
+      select_solid_block_from_inventory()
+      turtle.placeDown()
+    end
+end
+
+
+--[[
+  Block placer.
+]]
+function blockplace(length_raw)
+
+  length = tonumber(length_raw)
+  current_path = 1
+  
+  while current_path < length do
+  
+    turtle.forward()
+    current_path = current_path + 1
+    
+    place_solid_block_down()
+    
+    os.sleep(0.1)
+  end
+  
+end
+
+local args = { ... }
+blockplace(args[1])
+
